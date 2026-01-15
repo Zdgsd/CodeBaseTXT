@@ -55,7 +55,7 @@ const OutputControls: React.FC<OutputControlsProps> = ({ format, setFormat, opti
   if (percentage > 90) barColor = 'bg-red-500';
 
   return (
-    <div className="flex flex-col gap-4 h-full">
+    <div className="flex flex-col gap-4">
       {/* Quick Presets */}
       <div className="shrink-0 space-y-2">
          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
@@ -181,7 +181,7 @@ const OutputControls: React.FC<OutputControlsProps> = ({ format, setFormat, opti
       </div>
 
       {/* Custom Prompt - Flexible Height */}
-      <div className="flex-1 min-h-[80px] flex flex-col space-y-2">
+      <div className="flex flex-col space-y-2">
          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2 shrink-0">
             <MessageSquare className="w-3 h-3" /> Context Wrapper
         </label>
@@ -189,7 +189,7 @@ const OutputControls: React.FC<OutputControlsProps> = ({ format, setFormat, opti
           value={options.customPrompt}
           onChange={(e) => setOptions({...options, customPrompt: e.target.value})}
           placeholder="E.g. 'Analyze this codebase for security vulnerabilities...'"
-          className="w-full flex-1 bg-black/20 border border-slate-700/50 rounded-lg p-3 text-xs text-slate-300 placeholder:text-slate-600 focus:outline-none focus:border-primary/50 focus:bg-black/40 resize-none custom-scrollbar transition-all"
+          className="w-full bg-black/20 border border-slate-700/50 rounded-lg p-3 text-xs text-slate-300 placeholder:text-slate-600 focus:outline-none focus:border-primary/50 focus:bg-black/40 min-h-[80px] resize-y custom-scrollbar transition-all"
         />
       </div>
 

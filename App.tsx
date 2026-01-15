@@ -269,14 +269,15 @@ const App: React.FC = () => {
                 <Sidebar className="w-5 h-5 text-primary" />
                 <span>Explorer</span>
             </div>
-            <div className="flex items-center gap-2">
+             <div className="flex items-center gap-2">
                 <div className="text-[10px] font-mono text-slate-500 bg-white/5 px-2 py-1 rounded-full border border-white/5">
                     {selectedPaths.size} / {data?.stats.processedFilesCount}
                 </div>
-                {/* Desktop Close Button */}
+                {/* Close Button Inside Panel */}
                 <button 
                   onClick={() => setIsLeftOpen(false)} 
-                  className="hidden md:flex p-1 hover:bg-white/10 rounded-md text-slate-400 hover:text-white transition-colors"
+                  className="hidden md:flex p-1.5 hover:bg-white/10 rounded-md text-slate-400 hover:text-white transition-colors"
+                  title="Collapse Explorer"
                 >
                   <PanelLeftClose className="w-4 h-4" />
                 </button>
@@ -330,7 +331,7 @@ const App: React.FC = () => {
   );
 
   const PreviewPanel = () => (
-    <div className="flex flex-col h-full bg-[#050505] relative">
+    <div className="flex flex-col h-full bg-[#050505] relative w-full">
       {/* Mobile Header */}
       <div className="md:hidden h-28 border-b border-white/5 flex flex-col justify-center px-4 bg-surface/30 backdrop-blur-md sticky top-0 z-20 gap-3 shrink-0">
         <div className="flex items-center justify-between w-full">
@@ -370,11 +371,11 @@ const App: React.FC = () => {
       {/* Desktop Header */}
       <div className="hidden md:flex h-16 border-b border-white/5 items-center justify-between px-6 bg-surface/30 backdrop-blur-md sticky top-0 z-20 shrink-0">
         <div className="flex items-center gap-4">
-             {/* Left Toggle (only visible if closed) */}
+             {/* Left Toggle (Only shows when closed) */}
              {!isLeftOpen && (
               <button 
                 onClick={() => setIsLeftOpen(true)}
-                className="p-1.5 hover:bg-white/10 rounded-md text-slate-400 hover:text-white transition-colors"
+                className="p-2 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-colors border border-transparent hover:border-white/5"
                 title="Open Explorer"
               >
                 <PanelLeftOpen className="w-5 h-5" />
@@ -383,9 +384,8 @@ const App: React.FC = () => {
 
             <div className="flex items-center gap-6">
               <h2 className={clsx(
-                "text-sm font-semibold text-white/80 h-6 leading-6",
+                "text-sm font-semibold text-white/80 h-6 leading-6 transition-all",
                 !isLeftOpen && "border-l border-white/10 pl-4",
-                isLeftOpen && "pl-0"
               )}>
                   {data?.fileName}
               </h2>
@@ -431,11 +431,11 @@ const App: React.FC = () => {
             <span className="hidden lg:inline">Export</span>
           </button>
 
-           {/* Right Toggle (only visible if closed) */}
+           {/* Right Toggle (Only shows when closed) */}
            {!isRightOpen && (
               <button 
                 onClick={() => setIsRightOpen(true)}
-                className="p-1.5 hover:bg-white/10 rounded-md text-slate-400 hover:text-white transition-colors ml-2"
+                className="p-2 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-colors border border-transparent hover:border-white/5 ml-2"
                 title="Open Configuration"
               >
                 <PanelRightOpen className="w-5 h-5" />
@@ -445,7 +445,7 @@ const App: React.FC = () => {
       </div>
       
       {/* Content Area */}
-      <div className="flex-1 overflow-hidden relative min-h-0">
+      <div className="flex-1 overflow-hidden relative min-h-0 w-full">
         {activeTab === 'preview' ? (
           <>
             <textarea
@@ -508,10 +508,11 @@ const App: React.FC = () => {
                 </div>
                 Configuration
             </h3>
-            {/* Desktop Close Button */}
+            {/* Close Button Inside Panel */}
             <button 
               onClick={() => setIsRightOpen(false)} 
-              className="hidden md:flex p-1 hover:bg-white/10 rounded-md text-slate-400 hover:text-white transition-colors"
+              className="hidden md:flex p-1.5 hover:bg-white/10 rounded-md text-slate-400 hover:text-white transition-colors"
+              title="Collapse Config"
             >
               <PanelRightClose className="w-4 h-4" />
             </button>
@@ -535,7 +536,7 @@ const App: React.FC = () => {
       </div>
 
       {/* Main Controls - Flexible Center */}
-      <div className="flex-1 min-h-0 overflow-y-auto md:overflow-hidden p-5 pt-2 custom-scrollbar">
+      <div className="flex-1 min-h-0 overflow-y-auto p-5 pt-2 custom-scrollbar">
         <OutputControls 
             format={format}
             setFormat={setFormat}
@@ -582,22 +583,22 @@ const App: React.FC = () => {
   return (
     <div className="h-screen bg-background flex flex-col overflow-hidden text-slate-200 font-sans fixed inset-0">
       {/* Desktop Layout */}
-      <div className="hidden md:flex flex-1 h-full overflow-hidden">
+      <div className="hidden md:flex flex-1 h-full overflow-hidden relative">
         
         {/* Left Sidebar (Explorer) */}
         <motion.div 
             initial={{ width: 320 }}
             animate={{ width: isLeftOpen ? 320 : 0 }}
             transition={{ type: "spring", bounce: 0, duration: 0.4 }}
-            className="shrink-0 h-full z-20 shadow-2xl overflow-hidden border-r border-white/5 bg-background"
+            className="shrink-0 h-full z-20 shadow-2xl overflow-hidden border-r border-white/5 bg-background absolute left-0 top-0 bottom-0 md:static"
         >
-             <div className="w-80 h-full"> {/* Inner container fixed width to prevent content squishing */}
+             <div className="w-80 h-full"> {/* Inner container fixed width prevents squishing */}
                  <FilesPanel />
              </div>
         </motion.div>
 
-        {/* Center Panel */}
-        <div className="flex-1 h-full min-w-0 z-10">
+        {/* Center Panel - Flex Grow */}
+        <div className="flex-1 h-full min-w-0 z-10 flex flex-col relative">
           <PreviewPanel />
         </div>
 
@@ -606,9 +607,9 @@ const App: React.FC = () => {
              initial={{ width: 320 }}
              animate={{ width: isRightOpen ? 320 : 0 }}
              transition={{ type: "spring", bounce: 0, duration: 0.4 }}
-             className="shrink-0 h-full z-20 border-l border-white/5 overflow-hidden bg-background"
+             className="shrink-0 h-full z-20 border-l border-white/5 overflow-hidden bg-background absolute right-0 top-0 bottom-0 md:static"
         >
-            <div className="w-80 h-full">
+            <div className="w-80 h-full"> {/* Inner container fixed width */}
                 <ConfigPanel />
             </div>
         </motion.div>

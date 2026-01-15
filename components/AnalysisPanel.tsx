@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { GoogleGenAI } from "@google/genai";
-import { Send, Bot, Sparkles, StopCircle, User, Copy, Check, Key } from 'lucide-react';
+import { Send, Bot, Sparkles, StopCircle, User, Copy, Check, Key, AlertTriangle, RefreshCw } from 'lucide-react';
 import { clsx } from 'clsx';
 import { motion } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
@@ -15,6 +15,7 @@ interface AnalysisPanelProps {
 interface Message {
   role: 'user' | 'model';
   text: string;
+  isError?: boolean;
 }
 
 const CodeBlock = ({ children, className }: any) => {
@@ -74,12 +75,36 @@ const AnalysisPanel: React.FC<AnalysisPanelProps> = ({ contextContent, fileName,
     }
   }, [fileName]);
 
+  const parseError = (err: any): string => {
+      // Handle the complex nested JSON string error from Vercel/Proxy
+      try {
+          // If it's a string, try parsing it as JSON first
+          let errorObj = err;
+          if (typeof err.message === 'string' && err.message.startsWith('{')) {
+             try {
+                 const parsed = JSON.parse(err.message);
+                 if (parsed.error) errorObj = parsed.error;
+             } catch {}
+          }
+
+          if (errorObj?.code === 429 || errorObj?.status === 'RESOURCE_EXHAUSTED') {
+              return "⚠️ **Rate Limit Exceeded**\n\nYou are sending too many requests too quickly for the free tier.\n\n* **Wait 30-60 seconds** and try again.\n* Upgrade your API key quotas in Google AI Studio if this persists.";
+          }
+          
+          if (err.message) return err.message;
+          return "An unexpected error occurred.";
+
+      } catch (e) {
+          return err.message || "Unknown error occurred.";
+      }
+  }
+
   const handleSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
     if (!input.trim() || isLoading) return;
 
     if (!apiKey) {
-        setMessages(prev => [...prev, { role: 'user', text: input.trim() }, { role: 'model', text: "⚠️ **No API Key detected.**\n\nPlease enter your Gemini API Key in the **Configuration** panel (right sidebar) to use this feature." }]);
+        setMessages(prev => [...prev, { role: 'user', text: input.trim() }, { role: 'model', text: "⚠️ **No API Key detected.**\n\nPlease enter your Gemini API Key in the **Configuration** panel (right sidebar) to use this feature.", isError: true }]);
         setInput('');
         return;
     }
@@ -103,11 +128,11 @@ ${contextContent.slice(0, 500000)}
 `;
 
       const chat = ai.chats.create({
-        model: 'gemini-2.0-flash-exp',
+        model: 'gemini-3-flash-preview',
         config: {
             systemInstruction: systemInstruction,
         },
-        history: messages.map(m => ({
+        history: messages.filter(m => !m.isError).map(m => ({
             role: m.role,
             parts: [{ text: m.text }]
         }))
@@ -128,21 +153,18 @@ ${contextContent.slice(0, 500000)}
       setStreamText('');
     } catch (error: any) {
       console.error("AI Error:", error);
-      let errorMsg = error.message || 'Failed to generate response.';
-      if (errorMsg.includes('404')) {
-        errorMsg += ' (Model not found. Check API Key permissions or model availability).';
-      }
-      setMessages(prev => [...prev, { role: 'model', text: `Error: ${errorMsg}` }]);
+      const niceError = parseError(error);
+      setMessages(prev => [...prev, { role: 'model', text: niceError, isError: true }]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const renderMessageContent = (text: string, isUser: boolean) => (
+  const renderMessageContent = (text: string, isUser: boolean, isError?: boolean) => (
     <ReactMarkdown 
       remarkPlugins={[remarkGfm]}
       components={{
-        p: ({node, ...props}) => <p className="mb-3 last:mb-0 leading-relaxed" {...props} />,
+        p: ({node, ...props}) => <p className={clsx("mb-3 last:mb-0 leading-relaxed", isError && "text-red-200")} {...props} />,
         a: ({node, ...props}) => <a className="text-primary hover:underline break-all" target="_blank" rel="noopener noreferrer" {...props} />,
         ul: ({node, ...props}) => <ul className="list-disc pl-4 mb-3 space-y-1" {...props} />,
         ol: ({node, ...props}) => <ol className="list-decimal pl-4 mb-3 space-y-1" {...props} />,
@@ -173,7 +195,7 @@ ${contextContent.slice(0, 500000)}
   );
 
   return (
-    <div className="flex flex-col h-full bg-[#050505] relative">
+    <div className="flex flex-col h-full bg-[#050505] relative w-full">
       <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-6">
         {messages.map((msg, idx) => (
           <motion.div 
@@ -181,21 +203,21 @@ ${contextContent.slice(0, 500000)}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             className={clsx(
-              "flex gap-3 max-w-3xl mx-auto", 
+              "flex gap-3 max-w-3xl mx-auto w-full", 
               msg.role === 'user' ? "flex-row-reverse" : "flex-row"
             )}
           >
             <div className={clsx(
                 "w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-1",
-                msg.role === 'user' ? "bg-slate-700" : "bg-primary/20"
+                msg.role === 'user' ? "bg-slate-700" : msg.isError ? "bg-red-500/20" : "bg-primary/20"
             )}>
-                {msg.role === 'user' ? <User className="w-4 h-4 text-slate-300" /> : <Bot className="w-5 h-5 text-primary" />}
+                {msg.role === 'user' ? <User className="w-4 h-4 text-slate-300" /> : msg.isError ? <AlertTriangle className="w-4 h-4 text-red-400" /> : <Bot className="w-5 h-5 text-primary" />}
             </div>
             <div className={clsx(
               "p-4 rounded-2xl text-sm leading-relaxed font-sans min-w-0 overflow-hidden shadow-sm",
-              msg.role === 'user' ? "bg-slate-800 text-slate-200 rounded-tr-sm" : "bg-surfaceHighlight text-slate-300 rounded-tl-sm border border-white/5 w-full"
+              msg.role === 'user' ? "bg-slate-800 text-slate-200 rounded-tr-sm" : msg.isError ? "bg-red-900/10 border border-red-500/30 text-red-200 w-full" : "bg-surfaceHighlight text-slate-300 rounded-tl-sm border border-white/5 w-full"
             )}>
-              {renderMessageContent(msg.text, msg.role === 'user')}
+              {renderMessageContent(msg.text, msg.role === 'user', msg.isError)}
             </div>
           </motion.div>
         ))}
@@ -203,7 +225,7 @@ ${contextContent.slice(0, 500000)}
            <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="flex gap-3 max-w-3xl mx-auto"
+            className="flex gap-3 max-w-3xl mx-auto w-full"
             >
              <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center shrink-0 animate-pulse mt-1">
                 <Bot className="w-5 h-5 text-primary" />
