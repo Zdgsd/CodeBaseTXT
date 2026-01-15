@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Download, Copy, RefreshCw, CheckCheck, Zap, Sidebar, Settings, Search, FileText, Menu, X, Layers, Code2, Bot } from 'lucide-react';
+import { Download, Copy, RefreshCw, CheckCheck, Zap, Sidebar, Settings, Search, FileText, Menu, X, Layers, Code2, Bot, Github, ArrowUpRight } from 'lucide-react';
 import { processZipFile, generateOutput, filterTree } from './utils/zipProcessor';
 import { ProcessingResult, ProcessingStatus, OutputFormat, GenerationOptions, TreeNode } from './types';
 import DropZone from './components/DropZone';
@@ -444,9 +444,14 @@ const App: React.FC = () => {
 
   const ConfigPanel = () => (
     <div className="flex flex-col h-full bg-surface/30 backdrop-blur-xl border-l border-white/5">
-      <div className="p-6 overflow-y-auto custom-scrollbar flex-1 pb-24 md:pb-6">
-        <h3 className="flex items-center gap-2 font-bold text-white mb-6 text-sm uppercase tracking-wide">
-            <Settings className="w-4 h-4 text-primary" />
+      <div className="p-6 overflow-y-auto custom-scrollbar flex-1 pb-24 md:pb-6 relative">
+         {/* Gradient Header BG */}
+         <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />
+         
+        <h3 className="flex items-center gap-2 font-bold text-white mb-8 text-sm uppercase tracking-wide relative z-10">
+            <div className="p-1.5 bg-primary/20 rounded-md">
+                <Settings className="w-4 h-4 text-primary" />
+            </div>
             Configuration
         </h3>
         <OutputControls 
@@ -468,8 +473,26 @@ const App: React.FC = () => {
              </button>
         </div>
       </div>
-      <div className="p-4 border-t border-white/5 text-[10px] text-slate-600 font-mono text-center hidden md:block">
-        Secure Client-Side Processing
+      
+      {/* Footer / Credits */}
+      <div className="p-4 border-t border-white/5 bg-black/20 backdrop-blur-md hidden md:block">
+        <a 
+            href="https://github.com/Zdgsd/CodeBaseTXT" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="group flex items-center justify-between p-3 rounded-lg border border-white/5 hover:border-primary/30 hover:bg-white/5 transition-all"
+        >
+            <div className="flex items-center gap-3">
+                <div className="p-1.5 bg-white/5 rounded-md group-hover:bg-primary/20 transition-colors">
+                    <Github className="w-3.5 h-3.5 text-slate-400 group-hover:text-primary" />
+                </div>
+                <div className="text-left">
+                    <div className="text-[11px] font-medium text-slate-300 group-hover:text-white">Tool by Zdig</div>
+                    <div className="text-[9px] text-slate-500">View Source</div>
+                </div>
+            </div>
+            <ArrowUpRight className="w-3 h-3 text-slate-600 group-hover:text-primary transition-colors" />
+        </a>
       </div>
     </div>
   );
