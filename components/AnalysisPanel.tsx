@@ -174,7 +174,7 @@ ${contextContent.slice(0, 500000)}
 
   return (
     <div className="flex flex-col h-full bg-[#050505] relative">
-      <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-6 pb-20">
+      <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-6">
         {messages.map((msg, idx) => (
           <motion.div 
             key={idx}
@@ -218,7 +218,7 @@ ${contextContent.slice(0, 500000)}
       </div>
 
       {/* Input Area */}
-      <div className="p-4 bg-surface/50 backdrop-blur-md border-t border-white/5 absolute bottom-0 left-0 right-0 z-10">
+      <div className="p-4 bg-surface/50 backdrop-blur-md border-t border-white/5 z-10 shrink-0">
         <form onSubmit={handleSubmit} className="max-w-3xl mx-auto relative flex items-center gap-2">
             <input
                 type="text"

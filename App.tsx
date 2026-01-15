@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Download, Copy, RefreshCw, CheckCheck, Zap, Sidebar, Settings, Search, FileText, Menu, X, Layers, Code2, Bot, Github, ArrowUpRight, Key } from 'lucide-react';
+import { Download, Copy, RefreshCw, CheckCheck, Zap, Sidebar, Settings, Search, FileText, Menu, X, Layers, Code2, Bot, Github, ArrowUpRight, Key, PanelLeftClose, PanelRightClose, PanelLeftOpen, PanelRightOpen, ChevronLeft, ChevronRight } from 'lucide-react';
 import { processZipFile, generateOutput, filterTree } from './utils/zipProcessor';
 import { ProcessingResult, ProcessingStatus, OutputFormat, GenerationOptions, TreeNode } from './types';
 import DropZone from './components/DropZone';
@@ -41,6 +41,10 @@ const App: React.FC = () => {
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState<'preview' | 'stats' | 'analysis'>('preview');
   
+  // Desktop Sidebar States
+  const [isLeftOpen, setIsLeftOpen] = useState(true);
+  const [isRightOpen, setIsRightOpen] = useState(true);
+
   // Mobile state
   const [mobileTab, setMobileTab] = useState<MobileTab>('files');
   const [searchQuery, setSearchQuery] = useState('');
@@ -258,15 +262,24 @@ const App: React.FC = () => {
   }
 
   const FilesPanel = () => (
-    <div className="flex flex-col h-full bg-surface/50 backdrop-blur-xl border-r border-white/5">
-      <div className="p-4 border-b border-white/5 space-y-4 bg-background/50 sticky top-0 z-10">
+    <div className="flex flex-col h-full bg-surface/50 backdrop-blur-xl border-r border-white/5 w-full">
+      <div className="p-4 border-b border-white/5 space-y-4 bg-background/50 sticky top-0 z-10 shrink-0">
         <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 font-bold text-white tracking-tight">
                 <Sidebar className="w-5 h-5 text-primary" />
                 <span>Explorer</span>
             </div>
-            <div className="text-[10px] font-mono text-slate-500 bg-white/5 px-2 py-1 rounded-full border border-white/5">
-                {selectedPaths.size} / {data?.stats.processedFilesCount}
+            <div className="flex items-center gap-2">
+                <div className="text-[10px] font-mono text-slate-500 bg-white/5 px-2 py-1 rounded-full border border-white/5">
+                    {selectedPaths.size} / {data?.stats.processedFilesCount}
+                </div>
+                {/* Desktop Close Button */}
+                <button 
+                  onClick={() => setIsLeftOpen(false)} 
+                  className="hidden md:flex p-1 hover:bg-white/10 rounded-md text-slate-400 hover:text-white transition-colors"
+                >
+                  <PanelLeftClose className="w-4 h-4" />
+                </button>
             </div>
         </div>
         <div className="relative group">
@@ -293,7 +306,7 @@ const App: React.FC = () => {
             </div>
         )}
       </div>
-      <div className="flex-1 overflow-y-auto custom-scrollbar p-2 pb-24 md:pb-2">
+      <div className="flex-1 overflow-y-auto custom-scrollbar p-2 pb-24 md:pb-2 min-h-0">
         {filteredTree ? (
              <FileTree 
                 node={filteredTree} 
@@ -308,7 +321,7 @@ const App: React.FC = () => {
             </div>
         )}
       </div>
-      <div className="p-4 border-t border-white/5 bg-background/50 hidden md:block">
+      <div className="p-4 border-t border-white/5 bg-background/50 hidden md:block shrink-0">
         <button onClick={reset} className="flex items-center justify-center gap-2 text-xs font-medium text-slate-400 hover:text-white transition-colors w-full py-2 hover:bg-white/5 rounded-lg border border-transparent hover:border-white/5">
             <RefreshCw className="w-3.5 h-3.5" /> Start New Session
         </button>
@@ -319,7 +332,7 @@ const App: React.FC = () => {
   const PreviewPanel = () => (
     <div className="flex flex-col h-full bg-[#050505] relative">
       {/* Mobile Header */}
-      <div className="md:hidden h-28 border-b border-white/5 flex flex-col justify-center px-4 bg-surface/30 backdrop-blur-md sticky top-0 z-20 gap-3">
+      <div className="md:hidden h-28 border-b border-white/5 flex flex-col justify-center px-4 bg-surface/30 backdrop-blur-md sticky top-0 z-20 gap-3 shrink-0">
         <div className="flex items-center justify-between w-full">
             <span className="text-xs font-mono text-slate-400 truncate max-w-[150px]">{data?.fileName}</span>
             <button 
@@ -355,31 +368,48 @@ const App: React.FC = () => {
       </div>
 
       {/* Desktop Header */}
-      <div className="hidden md:flex h-16 border-b border-white/5 items-center justify-between px-6 bg-surface/30 backdrop-blur-md sticky top-0 z-20">
-        <div className="flex items-center gap-6">
-            <h2 className="text-sm font-semibold text-white/80 border-l border-white/10 pl-6 h-6 leading-6">
-                {data?.fileName}
-            </h2>
-            <div className="flex bg-black/40 rounded-lg p-0.5 border border-white/5">
-                <button 
-                    onClick={() => setActiveTab('preview')}
-                    className={clsx("px-4 py-1.5 rounded-md text-xs font-medium transition-all", activeTab === 'preview' ? "bg-surfaceHighlight text-white shadow-sm" : "text-slate-500 hover:text-slate-300")}
-                >
-                    Preview
-                </button>
-                <button 
-                    onClick={() => setActiveTab('stats')}
-                    className={clsx("px-4 py-1.5 rounded-md text-xs font-medium transition-all", activeTab === 'stats' ? "bg-surfaceHighlight text-white shadow-sm" : "text-slate-500 hover:text-slate-300")}
-                >
-                    Analytics
-                </button>
-                <button 
-                    onClick={() => setActiveTab('analysis')}
-                    className={clsx("px-4 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-1.5", activeTab === 'analysis' ? "bg-primary/20 text-primary shadow-sm" : "text-slate-500 hover:text-slate-300")}
-                >
-                    <Bot className="w-3.5 h-3.5" />
-                    AI Analyst
-                </button>
+      <div className="hidden md:flex h-16 border-b border-white/5 items-center justify-between px-6 bg-surface/30 backdrop-blur-md sticky top-0 z-20 shrink-0">
+        <div className="flex items-center gap-4">
+             {/* Left Toggle (only visible if closed) */}
+             {!isLeftOpen && (
+              <button 
+                onClick={() => setIsLeftOpen(true)}
+                className="p-1.5 hover:bg-white/10 rounded-md text-slate-400 hover:text-white transition-colors"
+                title="Open Explorer"
+              >
+                <PanelLeftOpen className="w-5 h-5" />
+              </button>
+            )}
+
+            <div className="flex items-center gap-6">
+              <h2 className={clsx(
+                "text-sm font-semibold text-white/80 h-6 leading-6",
+                !isLeftOpen && "border-l border-white/10 pl-4",
+                isLeftOpen && "pl-0"
+              )}>
+                  {data?.fileName}
+              </h2>
+              <div className="flex bg-black/40 rounded-lg p-0.5 border border-white/5">
+                  <button 
+                      onClick={() => setActiveTab('preview')}
+                      className={clsx("px-4 py-1.5 rounded-md text-xs font-medium transition-all", activeTab === 'preview' ? "bg-surfaceHighlight text-white shadow-sm" : "text-slate-500 hover:text-slate-300")}
+                  >
+                      Preview
+                  </button>
+                  <button 
+                      onClick={() => setActiveTab('stats')}
+                      className={clsx("px-4 py-1.5 rounded-md text-xs font-medium transition-all", activeTab === 'stats' ? "bg-surfaceHighlight text-white shadow-sm" : "text-slate-500 hover:text-slate-300")}
+                  >
+                      Analytics
+                  </button>
+                  <button 
+                      onClick={() => setActiveTab('analysis')}
+                      className={clsx("px-4 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-1.5", activeTab === 'analysis' ? "bg-primary/20 text-primary shadow-sm" : "text-slate-500 hover:text-slate-300")}
+                  >
+                      <Bot className="w-3.5 h-3.5" />
+                      AI Analyst
+                  </button>
+              </div>
             </div>
         </div>
         <div className="flex items-center gap-3">
@@ -400,11 +430,22 @@ const App: React.FC = () => {
             <Download className="w-4 h-4" />
             <span className="hidden lg:inline">Export</span>
           </button>
+
+           {/* Right Toggle (only visible if closed) */}
+           {!isRightOpen && (
+              <button 
+                onClick={() => setIsRightOpen(true)}
+                className="p-1.5 hover:bg-white/10 rounded-md text-slate-400 hover:text-white transition-colors ml-2"
+                title="Open Configuration"
+              >
+                <PanelRightOpen className="w-5 h-5" />
+              </button>
+            )}
         </div>
       </div>
       
       {/* Content Area */}
-      <div className="flex-1 overflow-hidden relative">
+      <div className="flex-1 overflow-hidden relative min-h-0">
         {activeTab === 'preview' ? (
           <>
             <textarea
@@ -457,20 +498,25 @@ const App: React.FC = () => {
   );
 
   const ConfigPanel = () => (
-    <div className="flex flex-col h-full bg-surface/30 backdrop-blur-xl border-l border-white/5">
-      <div className="p-6 overflow-y-auto custom-scrollbar flex-1 pb-24 md:pb-6 relative">
-         {/* Gradient Header BG */}
-         <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />
-         
-        <h3 className="flex items-center gap-2 font-bold text-white mb-6 text-sm uppercase tracking-wide relative z-10">
-            <div className="p-1.5 bg-primary/20 rounded-md">
-                <Settings className="w-4 h-4 text-primary" />
-            </div>
-            Configuration
-        </h3>
-        
-        {/* API Key Section */}
-        <div className="mb-6 space-y-3 relative z-10">
+    <div className="flex flex-col h-full bg-surface/30 backdrop-blur-xl border-l border-white/5 w-full">
+      {/* Header & API Key - Fixed Top */}
+      <div className="shrink-0 p-5 pb-2 relative z-10">
+         <div className="flex items-center justify-between mb-4">
+             <h3 className="flex items-center gap-2 font-bold text-white text-sm uppercase tracking-wide">
+                <div className="p-1.5 bg-primary/20 rounded-md">
+                    <Settings className="w-4 h-4 text-primary" />
+                </div>
+                Configuration
+            </h3>
+            {/* Desktop Close Button */}
+            <button 
+              onClick={() => setIsRightOpen(false)} 
+              className="hidden md:flex p-1 hover:bg-white/10 rounded-md text-slate-400 hover:text-white transition-colors"
+            >
+              <PanelRightClose className="w-4 h-4" />
+            </button>
+         </div>
+        <div className="space-y-2">
              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
                 <Key className="w-3 h-3" /> API Access
             </label>
@@ -479,18 +525,17 @@ const App: React.FC = () => {
                     type="password"
                     value={apiKey}
                     onChange={handleApiKeyChange}
-                    placeholder="Enter Gemini API Key..."
-                    className="w-full bg-black/40 border border-slate-700/50 rounded-lg pl-9 pr-3 py-2.5 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-primary/50 focus:bg-black/60 transition-all"
+                    placeholder="Gemini API Key..."
+                    className="w-full bg-black/40 border border-slate-700/50 rounded-lg pl-8 pr-3 py-2 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-primary/50 focus:bg-black/60 transition-all"
                 />
-                <Key className="absolute left-3 top-2.5 w-3.5 h-3.5 text-slate-500 group-focus-within:text-primary transition-colors" />
-            </div>
-            <div className="text-[9px] text-slate-500 leading-relaxed px-1">
-                Required for AI Analyst. Key is stored locally in your browser. <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Get Key &rarr;</a>
+                <Key className="absolute left-2.5 top-2.5 w-3 h-3 text-slate-500 group-focus-within:text-primary transition-colors" />
             </div>
         </div>
-        
-        <div className="w-full h-px bg-white/5 mb-6 relative z-10" />
+        <div className="w-full h-px bg-white/5 mt-4" />
+      </div>
 
+      {/* Main Controls - Flexible Center */}
+      <div className="flex-1 min-h-0 overflow-y-auto md:overflow-hidden p-5 pt-2 custom-scrollbar">
         <OutputControls 
             format={format}
             setFormat={setFormat}
@@ -500,7 +545,7 @@ const App: React.FC = () => {
             rawTokenCount={rawTokenCount}
         />
 
-        {/* Mobile Download Button */}
+        {/* Mobile Download - Only shows on mobile via CSS elsewhere or conditional */}
         <div className="mt-8 space-y-3 md:hidden">
              <button onClick={handleDownload} className="w-full flex items-center justify-center gap-2 py-3 bg-primary text-white rounded-xl font-medium">
                 <Download className="w-4 h-4" /> Download Export
@@ -511,8 +556,8 @@ const App: React.FC = () => {
         </div>
       </div>
       
-      {/* Footer / Credits */}
-      <div className="p-4 border-t border-white/5 bg-black/20 backdrop-blur-md hidden md:block">
+      {/* Footer / Credits - Fixed Bottom */}
+      <div className="shrink-0 p-4 border-t border-white/5 bg-black/20 backdrop-blur-md hidden md:block">
         <a 
             href="https://github.com/Zdgsd/CodeBaseTXT" 
             target="_blank" 
@@ -538,15 +583,35 @@ const App: React.FC = () => {
     <div className="h-screen bg-background flex flex-col overflow-hidden text-slate-200 font-sans fixed inset-0">
       {/* Desktop Layout */}
       <div className="hidden md:flex flex-1 h-full overflow-hidden">
-        <div className="w-80 lg:w-96 shrink-0 h-full z-20 shadow-2xl">
-          <FilesPanel />
-        </div>
+        
+        {/* Left Sidebar (Explorer) */}
+        <motion.div 
+            initial={{ width: 320 }}
+            animate={{ width: isLeftOpen ? 320 : 0 }}
+            transition={{ type: "spring", bounce: 0, duration: 0.4 }}
+            className="shrink-0 h-full z-20 shadow-2xl overflow-hidden border-r border-white/5 bg-background"
+        >
+             <div className="w-80 h-full"> {/* Inner container fixed width to prevent content squishing */}
+                 <FilesPanel />
+             </div>
+        </motion.div>
+
+        {/* Center Panel */}
         <div className="flex-1 h-full min-w-0 z-10">
           <PreviewPanel />
         </div>
-        <div className="w-80 shrink-0 h-full z-20 border-l border-white/5">
-          <ConfigPanel />
-        </div>
+
+        {/* Right Sidebar (Config) */}
+        <motion.div 
+             initial={{ width: 320 }}
+             animate={{ width: isRightOpen ? 320 : 0 }}
+             transition={{ type: "spring", bounce: 0, duration: 0.4 }}
+             className="shrink-0 h-full z-20 border-l border-white/5 overflow-hidden bg-background"
+        >
+            <div className="w-80 h-full">
+                <ConfigPanel />
+            </div>
+        </motion.div>
       </div>
 
       {/* Mobile Layout */}

@@ -42,24 +42,24 @@ const SmartFilters: React.FC<SmartFiltersProps> = ({ rootNode, selectedPaths, on
     }
 
     return (
-        <div className="flex gap-2 mb-4 px-1 overflow-x-auto custom-scrollbar pb-2">
+        <div className="flex gap-2 mb-4 overflow-x-auto custom-scrollbar pb-2 mask-linear">
             <button 
                 onClick={() => applyFilter(p => p.toLowerCase().includes('.test.') || p.toLowerCase().includes('.spec.') || p.toLowerCase().includes('__tests__'))}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surfaceHighlight border border-slate-700 text-[10px] font-medium text-slate-300 hover:border-red-400 hover:text-red-400 transition-all shrink-0"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surfaceHighlight border border-slate-700 text-[10px] font-medium text-slate-300 hover:border-red-400 hover:text-red-400 transition-all shrink-0 whitespace-nowrap"
             >
                 <TestTube2 className="w-3 h-3" />
                 Exclude Tests
             </button>
              <button 
                 onClick={() => applyFilter(p => p.toLowerCase().includes('config') || p.endsWith('.json') || p.endsWith('.lock') || p.includes('.rc'))}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surfaceHighlight border border-slate-700 text-[10px] font-medium text-slate-300 hover:border-amber-400 hover:text-amber-400 transition-all shrink-0"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surfaceHighlight border border-slate-700 text-[10px] font-medium text-slate-300 hover:border-amber-400 hover:text-amber-400 transition-all shrink-0 whitespace-nowrap"
             >
                 <FileCog className="w-3 h-3" />
                 Exclude Configs
             </button>
              <button 
                 onClick={selectSourceOnly}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/30 text-[10px] font-medium text-primary hover:bg-primary/20 transition-all shrink-0"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/30 text-[10px] font-medium text-primary hover:bg-primary/20 transition-all shrink-0 whitespace-nowrap"
             >
                 <Code2 className="w-3 h-3" />
                 Source Only
