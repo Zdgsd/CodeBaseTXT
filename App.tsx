@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Download, Copy, RefreshCw, CheckCheck, Zap, Sidebar, Settings, Search, FileText, Menu, X, Layers, Code2, Bot, Github, ArrowUpRight } from 'lucide-react';
+import { Download, Copy, RefreshCw, CheckCheck, Zap, Sidebar, Settings, Search, FileText, Menu, X, Layers, Code2, Bot, Github, ArrowUpRight, Key } from 'lucide-react';
 import { processZipFile, generateOutput, filterTree } from './utils/zipProcessor';
 import { ProcessingResult, ProcessingStatus, OutputFormat, GenerationOptions, TreeNode } from './types';
 import DropZone from './components/DropZone';
@@ -30,6 +30,9 @@ const App: React.FC = () => {
     customPrompt: ''
   });
   
+  // Initialize API Key from localStorage or environment variable
+  const [apiKey, setApiKey] = useState(() => localStorage.getItem('gemini_api_key') || process.env.API_KEY || '');
+  
   const [selectedPaths, setSelectedPaths] = useState<Set<string>>(new Set());
   const [output, setOutput] = useState<string>('');
   const [stats, setStats] = useState<any>({ tokenCount: 0, fileCount: 0, charCount: 0 });
@@ -41,6 +44,13 @@ const App: React.FC = () => {
   // Mobile state
   const [mobileTab, setMobileTab] = useState<MobileTab>('files');
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Handle API Key updates
+  const handleApiKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const newKey = e.target.value;
+      setApiKey(newKey);
+      localStorage.setItem('gemini_api_key', newKey);
+  };
 
   const handleFileProcess = async (file: File) => {
     setStatus(ProcessingStatus.PROCESSING);
@@ -436,7 +446,11 @@ const App: React.FC = () => {
                 ): null}
             </div>
         ) : (
-            <AnalysisPanel contextContent={output} fileName={data?.fileName || 'Codebase'} />
+            <AnalysisPanel 
+                contextContent={output} 
+                fileName={data?.fileName || 'Codebase'} 
+                apiKey={apiKey}
+            />
         )}
       </div>
     </div>
@@ -448,12 +462,35 @@ const App: React.FC = () => {
          {/* Gradient Header BG */}
          <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />
          
-        <h3 className="flex items-center gap-2 font-bold text-white mb-8 text-sm uppercase tracking-wide relative z-10">
+        <h3 className="flex items-center gap-2 font-bold text-white mb-6 text-sm uppercase tracking-wide relative z-10">
             <div className="p-1.5 bg-primary/20 rounded-md">
                 <Settings className="w-4 h-4 text-primary" />
             </div>
             Configuration
         </h3>
+        
+        {/* API Key Section */}
+        <div className="mb-6 space-y-3 relative z-10">
+             <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+                <Key className="w-3 h-3" /> API Access
+            </label>
+            <div className="relative group">
+                <input
+                    type="password"
+                    value={apiKey}
+                    onChange={handleApiKeyChange}
+                    placeholder="Enter Gemini API Key..."
+                    className="w-full bg-black/40 border border-slate-700/50 rounded-lg pl-9 pr-3 py-2.5 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-primary/50 focus:bg-black/60 transition-all"
+                />
+                <Key className="absolute left-3 top-2.5 w-3.5 h-3.5 text-slate-500 group-focus-within:text-primary transition-colors" />
+            </div>
+            <div className="text-[9px] text-slate-500 leading-relaxed px-1">
+                Required for AI Analyst. Key is stored locally in your browser. <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Get Key &rarr;</a>
+            </div>
+        </div>
+        
+        <div className="w-full h-px bg-white/5 mb-6 relative z-10" />
+
         <OutputControls 
             format={format}
             setFormat={setFormat}
